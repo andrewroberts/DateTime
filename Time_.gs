@@ -2,10 +2,10 @@
 
 // JSHint - TODO
 
-// Time_.gs
+// Time.gs
 // ========
 
-var Time_ = {
+var Time = {
 
 /**
  * Get Date Object from date & time strings
@@ -582,4 +582,4 @@ newDay: function() {
     
 } // Time_.newDay()
 
-} // Time_
+} // Time
