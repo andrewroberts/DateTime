@@ -316,7 +316,7 @@ function gmtToCalendarDate(scriptDateTime, calendar) {
  *
  * @param {Date} date
  *
- * @return {String} formatted date
+ * @return {String} formatted date - MM/dd/YYYY
  */
 
 function getFormattedDate(date) {
@@ -337,7 +337,7 @@ function getFormattedDate(date) {
  * @param {Date} date
  * @param {String} timeZone [OPTIONAL]
  *
- * @return {String} formatted date
+ * @return {String} formatted date - hh:mm a
  */
 
 function getFormattedTime(time, timeZone) {
@@ -397,30 +397,31 @@ function getMidnight(days, calendar) {
 
 function newDay() {
     
-    var lastCheckedDate = Properties_.getProperty(PROPERTY_DAILY_CHECK)
-    Logger.log('lastCheckedDate: ' + lastCheckedDate)
-     
-    var today = (new Date()).toDateString()
-    Properties_.setProperty(PROPERTY_DAILY_CHECK, today)    
-    Logger.log('today: ' + today)
-    
-    var newDay = (lastCheckedDate !== today)   
-    Logger.log('newDay: ' + newDay)
-    
-    return newDay
-    
+  var lastCheckedDate = Properties_.getProperty(PROPERTY_DAILY_CHECK)
+  Logger.log('lastCheckedDate: ' + lastCheckedDate)
+  
+  var today = (new Date()).toDateString()
+  Properties_.setProperty(PROPERTY_DAILY_CHECK, today)    
+  Logger.log('today: ' + today)
+  
+  var newDay = (lastCheckedDate !== today)   
+  Logger.log('newDay: ' + newDay)
+  
+  return newDay
+  
 } // DateTime_.newDay()
 
 /**
  * Get Date Object from date string of format YYYY-MM-dd and time 
  * string of HH:mm format
  *
- * @param {Object} 
+ * @param {string} dateStr
+ * @param {string} timeStr
  *
- * @return {Object}
+ * @return {Date}
  */
  
-function getDateTime(dateStr, timeStr) {
+function getDateTimeFromString(dateStr, timeStr) {
 
   var dateArr = dateStr.split('-')
   var timeArr = timeStr.split(':')
@@ -433,6 +434,21 @@ function getDateTime(dateStr, timeStr) {
   return new Date(dateTime)
   
 } // DateTime_.getDateTime()
+
+/**
+ * @param {string} dateString - DDMMYY
+ *
+ * @return {Date} date
+ */
+ 
+function getDateFromString(dateString) {
+  var start = '160245'
+  var year = '20' + dateString.slice(4)
+  var month = parseInt(dateString.slice(2, 4), 10) - 1
+  var day = dateString.slice(0, 2)
+  var date = new Date(year, month, day)
+  return date
+}
 
 /**
  * Convert the duration from a GSheet into a number of hours.
@@ -666,4 +682,13 @@ function getDateOnThisDay(originalDate, dayOfTheWeekString, forwards) {
   return nextDate;
   
 } // DateTime_.getDateOnThisDay()
+
+function isISODateString(dateString) {
+  if (typeof dateString !== 'string') {return false}
+  // E.g. 2020-01-01T12:43:26.000Z
+  var regex = /20\d{2}(-|\/)((0[1-9])|(1[0-2]))(-|\/)((0[1-9])|([1-2][0-9])|(3[0-1]))(T|\s)(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9]).([0-9][0-9][0-9])(Z)/
+  var result = dateString.match(regex)
+  return (result !== null && result.length === 18)
+}
+
     
