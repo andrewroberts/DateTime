@@ -3,100 +3,6 @@
 // JSHint - TODO
 
 /**
- * Get Date Object from date & time strings
- *
- * @param {String} dateString - YYYY-MM-dd or MM/dd/YYYY
- * @param {String} timeString - HH:mm a
- *
- * @return {Date} or null
- */
- 
-function getDateTime(dateString, timeString) {
-  
-  Logger.log('dateString: ' + dateString)
-  Logger.log('timeString: ' + timeString)
-
-  if (typeof dateString !== 'string') {
-    throw new TypeError('Bad date parameter')
-  }
-
-  if (typeof timeString !== 'string') {
-    throw new TypeError('Bad time parameter')
-  }
-
-  var year 
-  var month
-  var day
-  var hour
-  var minutes
-
-  var dateArray = dateString.split('-')
-    
-  if (dateArray.length === 3) {
-  
-    Logger.log('Date format YYYY-MM-dd or YY-MM-dd')
-
-    year = dateArray[0]
-
-    if (year.length === 2) {
-      year = '20' + year
-    }
-
-    month = parseInt(dateArray[1], 10) - 1
-    day = dateArray[2]
-  
-  } else {
-  
-    Logger.log('Date is format mm/dd/YYYY or mm/dd/YY')
-    dateArray = dateString.split('/')
-    
-    if (dateArray.length !== 3) {
-      throw new Error('Unrecognised date format')    
-    }
-
-    year = dateArray[2]
-    
-    if (year.length === 2) {
-      year = '20' + year
-    }
-        
-    month = parseInt(dateArray[0], 10) - 1    
-    day = dateArray[1]
-  }
-
-  Logger.log('year:' + year)
-  Logger.log('month:' + month)
-  Logger.log('day:' + day)
-
-  if (day > 31) {
-    throw new Error('Day is greater than 31: ' + day)
-  }
-
-  if (month > 12) {
-    throw new Error('Month is greater than 12: ' + month)
-  }
-    
-  var timeArray = timeString.split(':')
-  
-  hour = parseInt(timeArray[0], 10)
-  minutes = parseInt(timeArray[1], 10)
-  
-  Logger.log('hour: ' + hour)
-  Logger.log('minutes: ' + minutes)
-
-  var dateTimeInMs = (new Date(year, month, day)).getTime() + (hour * 60 * 60 * 1000) + (minutes * 60 * 1000)
-  
-  if (dateTimeInMs !== dateTimeInMs) {
-    throw new Error('dateTime is NaN: ' + dateTimeInMs)
-  }
-
-  Logger.log('dateTimeInMs: ' + dateTimeInMs)
-  var dateTime = new Date(dateTimeInMs)
-  return dateTime
-  
-} // DateTime_.getDateTime()
-
-/**
  * Given a script date object, return the time in the timezone of the 
  * user's calendar
  *
@@ -412,45 +318,6 @@ function newDay() {
 } // DateTime_.newDay()
 
 /**
- * Get Date Object from date string of format YYYY-MM-dd and time 
- * string of HH:mm format
- *
- * @param {string} dateStr
- * @param {string} timeStr
- *
- * @return {Date}
- */
- 
-function getDateTimeFromString(dateStr, timeStr) {
-
-  var dateArr = dateStr.split('-')
-  var timeArr = timeStr.split(':')
-  
-  var dateTime = new Date(
-    dateArr[0], 
-    parseInt(dateArr[1], 10) - 1, 
-    dateArr[2]).getTime() + parseInt(timeArr[0], 10) * 60 * 60 * 1000 + parseInt(timeArr[1], 10) * 60 * 1000
-    
-  return new Date(dateTime)
-  
-} // DateTime_.getDateTime()
-
-/**
- * @param {string} dateString - DDMMYY
- *
- * @return {Date} date
- */
- 
-function getDateFromString(dateString) {
-  var start = '160245'
-  var year = '20' + dateString.slice(4)
-  var month = parseInt(dateString.slice(2, 4), 10) - 1
-  var day = dateString.slice(0, 2)
-  var date = new Date(year, month, day)
-  return date
-}
-
-/**
  * Convert the duration from a GSheet into a number of hours.
  *
  * The spreadsheet stores durations as time since Sat Dec 30 1899 00:00 UTC.
@@ -683,12 +550,243 @@ function getDateOnThisDay(originalDate, dayOfTheWeekString, forwards) {
   
 } // DateTime_.getDateOnThisDay()
 
+/**
+ * Is ISO string E.g. 2020-01-01T12:43:26.000Z
+ */
+
 function isISODateString(dateString) {
   if (typeof dateString !== 'string') {return false}
-  // E.g. 2020-01-01T12:43:26.000Z
   var regex = /20\d{2}(-|\/)((0[1-9])|(1[0-2]))(-|\/)((0[1-9])|([1-2][0-9])|(3[0-1]))(T|\s)(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9]).([0-9][0-9][0-9])(Z)/
   var result = dateString.match(regex)
   return (result !== null && result.length === 18)
 }
 
+/**
+ * 
+ */
+ 
+function getDateTimeFromString(config) {
+
+  if (!config) {throw new Error('Bad config')}  
+  var type = config.type || 'ISO' 
+  var oldDateTime = config.dateTime
+  if (!oldDateTime) {throw new Error('No date/time string')}
+  var newDateTime 
+
+  if (type === 'ISO') {
+  
+    if (!isISODateString(oldDateTime)) {throw new Error('Bad ISO string: %s', dateTime)}    
+    newDateTime = new Date(oldDateTime)
+  
+  } else if (type === 'YYYY-MM-DD mm:hh:ss') { // or 'YY-MM-DD mm:hh:ss', seconds optional or 'YY/MM/DD mm:hh:ss'
+  
+    newDateTime = getDateTime1(oldDateTime)
     
+  } else if (type === 'DDMMYY') {
+  
+    newDateTime = getDate1(oldDateTime)
+  }
+  
+  if (!(newDateTime instanceof Date)) {throw new Error('Bad Date: %s', oldDateTime)} 
+  return newDateTime
+  
+  // Private Functions
+  // -----------------
+  
+  /**
+   * @param {string} dateString - DDMMYY
+   *
+   * @return {Date} date
+   */
+   
+  function getDate1(dateString) {
+    var year = '20' + dateString.slice(4)
+    var month = parseInt(dateString.slice(2, 4), 10) - 1
+    var day = dateString.slice(0, 2)
+    var date = new Date(year, month, day)
+    return date
+  }
+  
+  /**
+   * @param {string} dateTimeString - "YYYY-MM-DD mm:hh:ss" or 
+   *
+   * @return {Date} date object
+   */
+   
+  function getDateTime1(dateTimeString) {
+  
+    var dateLength = 10 // YYYY-MM-DD
+  
+    var dateArray = dateTimeString.split('-')
+
+    if (dateArray && dateArray.length !== 3) {
+      dateArray = dateTimeString.split('/')
+    }
+  
+    if (dateArray.length !== 3) { 
+      throw new Error('Bad "YYYY-MM-DD mm:hh:ss" dateTime: %s', dateTimeString)
+    }
+    
+    var year = dateArray[0]
+    
+    if (year.length === 2) {
+      year = '20' + year
+      dateLength = 8 // YY-MM-DD
+    }
+    
+    var month = parseInt(dateArray[1], 10) - 1
+    
+    if (month > 12) {
+      throw new Error('Month is greater than 12: %d, in %s', month, dateTimeString)
+    }
+    
+    var date = dateArray[2].slice(0, 2)
+    
+    if (date > 31) {
+      throw new Error('Day is greater than 31: %d, in %s', date, dateTimeString)
+    }
+
+    var timeArray = dateTimeString.slice(dateLength + 1).split(':')    
+    
+    if (timeArray.length !== 2 && timeArray.length !== 3) {
+      throw new Error('Bad time %s', dateTimeString)
+    }
+    
+    var hour = parseInt(timeArray[0], 10)
+    if (hour > 12) {throw new Error('Bad hour %d in %s', date, dateTimeString)}
+    
+    var minutes = parseInt(timeArray[1], 10)
+    if (minutes > 60) {throw new Error('Bad minutes %d in %s', minutes, dateTimeString)}
+    
+    var seconds = 0
+    
+    if (timeArray.length === 3) {
+      seconds = parseInt(timeArray[2], 10)
+      if (seconds > 60) {throw new Error('Bad seconds %d in %s', seconds, dateTimeString)}
+    }
+    
+    return new Date(year, month, date, hour, minutes, seconds)
+
+  } // getDateTime1()
+
+} // getDateTimeFromString()
+
+// TODO - Replaced by getDateTime1()
+
+/**
+ * Get Date Object from date & time strings
+ *
+ * @param {String} dateString - YYYY-MM-dd or MM/dd/YYYY
+ * @param {String} timeString - HH:mm a
+ *
+ * @return {Date} or null
+ */
+ 
+function getDateTime(dateString, timeString) {
+  
+  Logger.log('dateString: ' + dateString)
+  Logger.log('timeString: ' + timeString)
+
+  if (typeof dateString !== 'string') {
+    throw new TypeError('Bad date parameter')
+  }
+
+  if (typeof timeString !== 'string') {
+    throw new TypeError('Bad time parameter')
+  }
+
+  var year 
+  var month
+  var day
+  var hour
+  var minutes
+
+  var dateArray = dateString.split('-')
+    
+  if (dateArray.length === 3) {
+  
+    Logger.log('Date format YYYY-MM-dd or YY-MM-dd')
+
+    year = dateArray[0]
+
+    if (year.length === 2) {
+      year = '20' + year
+    }
+
+    month = parseInt(dateArray[1], 10) - 1
+    day = dateArray[2]
+  
+  } else {
+  
+    Logger.log('Date is format mm/dd/YYYY or mm/dd/YY')
+    dateArray = dateString.split('/')
+    
+    if (dateArray.length !== 3) {
+      throw new Error('Unrecognised date format')    
+    }
+
+    year = dateArray[2]
+    
+    if (year.length === 2) {
+      year = '20' + year
+    }
+        
+    month = parseInt(dateArray[0], 10) - 1    
+    day = dateArray[1]
+  }
+
+  Logger.log('year:' + year)
+  Logger.log('month:' + month)
+  Logger.log('day:' + day)
+
+  if (day > 31) {
+    throw new Error('Day is greater than 31: ' + day)
+  }
+
+  if (month > 12) {
+    throw new Error('Month is greater than 12: ' + month)
+  }
+    
+  var timeArray = timeString.split(':')
+  
+  hour = parseInt(timeArray[0], 10)
+  minutes = parseInt(timeArray[1], 10)
+  
+  Logger.log('hour: ' + hour)
+  Logger.log('minutes: ' + minutes)
+
+  var dateTimeInMs = (new Date(year, month, day)).getTime() + (hour * 60 * 60 * 1000) + (minutes * 60 * 1000)
+  
+  if (dateTimeInMs !== dateTimeInMs) {
+    throw new Error('dateTime is NaN: ' + dateTimeInMs)
+  }
+
+  Logger.log('dateTimeInMs: ' + dateTimeInMs)
+  var dateTime = new Date(dateTimeInMs)
+  return dateTime
+  
+} // DateTime_.getDateTime()
+
+/**
+ * Get Date Object from date string of format YYYY-MM-dd and time 
+ * string of HH:mm format
+ *
+ * @param {string} dateStr
+ * @param {string} timeStr
+ *
+ * @return {Date}
+ */
+ 
+function getDateTimeFromString1(dateStr, timeStr) {
+
+  var dateArr = dateStr.split('-')
+  var timeArr = timeStr.split(':')
+  
+  var dateTime = new Date(
+    dateArr[0], 
+    parseInt(dateArr[1], 10) - 1, 
+    dateArr[2]).getTime() + parseInt(timeArr[0], 10) * 60 * 60 * 1000 + parseInt(timeArr[1], 10) * 60 * 1000
+    
+  return new Date(dateTime)
+  
+} // DateTime_.getDateTime()
