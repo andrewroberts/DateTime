@@ -575,7 +575,7 @@ function getDateTimeFromString(config) {
 
   if (type === 'ISO') {
   
-    if (!isISODateString(oldDateTime)) {throw new Error('Bad ISO string: %s', dateTime)}    
+    if (!isISODateString(oldDateTime)) {throw new Error('Bad ISO string: "' + dateTime + '"')}    
     newDateTime = new Date(oldDateTime)
   
   } else if (type === 'YYYY-MM-DD mm:hh:ss') { // or 'YY-MM-DD mm:hh:ss', seconds optional or 'YY/MM/DD mm:hh:ss'
@@ -587,7 +587,7 @@ function getDateTimeFromString(config) {
     newDateTime = getDate1(oldDateTime)
   }
   
-  if (!(newDateTime instanceof Date)) {throw new Error('Bad Date: %s', oldDateTime)} 
+  if (!(newDateTime instanceof Date)) {throw new Error('Bad Date: "' + oldDateTime + '"')} 
   return newDateTime
   
   // Private Functions
@@ -624,7 +624,7 @@ function getDateTimeFromString(config) {
     }
   
     if (dateArray.length !== 3) { 
-      throw new Error('Bad "YYYY-MM-DD mm:hh:ss" dateTime: %s', dateTimeString)
+      throw new Error('Bad "YYYY-MM-DD mm:hh:ss" dateTime: "' + dateTimeString + '"')
     }
     
     var year = dateArray[0]
@@ -637,32 +637,37 @@ function getDateTimeFromString(config) {
     var month = parseInt(dateArray[1], 10) - 1
     
     if (month > 12) {
-      throw new Error('Month is greater than 12: %d, in %s', month, dateTimeString)
+      throw new Error('Month is greater than 12: ' + month + 'in "' + dateTimeString + '"')
     }
     
     var date = dateArray[2].slice(0, 2)
     
     if (date > 31) {
-      throw new Error('Day is greater than 31: %d, in %s', date, dateTimeString)
+      throw new Error('Day is greater than 31: ' + date + ', in "' + dateTimeString + '"')
     }
 
     var timeArray = dateTimeString.slice(dateLength + 1).split(':')    
     
-    if (timeArray.length !== 2 && timeArray.length !== 3) {
-      throw new Error('Bad time %s', dateTimeString)
-    }
-    
-    var hour = parseInt(timeArray[0], 10)
-    if (hour > 12) {throw new Error('Bad hour %d in %s', date, dateTimeString)}
-    
-    var minutes = parseInt(timeArray[1], 10)
-    if (minutes > 60) {throw new Error('Bad minutes %d in %s', minutes, dateTimeString)}
-    
+    var hour = 0
+    var minutes = 0
     var seconds = 0
     
-    if (timeArray.length === 3) {
-      seconds = parseInt(timeArray[2], 10)
-      if (seconds > 60) {throw new Error('Bad seconds %d in %s', seconds, dateTimeString)}
+    if (timeArray[0] !== '') {
+    
+      if (timeArray.length !== 2 && timeArray.length !== 3) {
+        throw new Error('Bad time "' + dateTimeString + '"')
+      }
+      
+      hour = parseInt(timeArray[0], 10)
+      if (hour > 23) {throw new Error('Bad hour ' + date + ' in "' + dateTimeString + '"')}
+      
+      minutes = parseInt(timeArray[1], 10)
+      if (minutes > 60) {throw new Error('Bad minutes ' + minutes + ' in "' + dateTimeString + '"')}
+      
+      if (timeArray.length === 3) {
+        seconds = parseInt(timeArray[2], 10)
+        if (seconds > 60) {throw new Error('Bad seconds ' + seconds + ' in "' + dateTimeString + '"')}
+      }
     }
     
     return new Date(year, month, date, hour, minutes, seconds)
