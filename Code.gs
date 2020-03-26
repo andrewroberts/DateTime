@@ -269,7 +269,7 @@ function getFormattedTime(time, timeZone) {
  * @return {Date} midnight
  */
  
-function getMidnight(days, calendar) {
+function getOldMidnight(days, calendar) {
 
   calendar = (typeof calendar === 'undefined') ? Calendar_.get() : calendar
   days = (typeof days === 'undefined') ? 0 : days
@@ -411,7 +411,7 @@ function getUKTimezoneString(date) {
  * Check if this is a new day
  */
 
-function newDay() {
+function isNewDay() {
   
   var lastCheckedDate = Properties_.getProperty(PROPERTY_EVENTS_CHECKED)
   Logger.log('lastCheckedDate: ' + lastCheckedDate)
@@ -795,3 +795,34 @@ function getDateTimeFromString1(dateStr, timeStr) {
   return new Date(dateTime)
   
 } // DateTime_.getDateTime()
+
+/**
+ * @param {Date} date
+ *
+ * @return {Date} midnight last night - if the present time is 06:15 this gives 00:00, 6 hours ago
+ */
+ 
+ function getMidnightLastNight(date) {
+   var year = date.getYear()
+   var month = date.getMonth()
+   var day = date.getDate()
+   return new Date(year, month, day)
+ }
+
+/**
+ * @param {Date} date
+ *
+ * @return {Date} midnight tonight - if the present time is 06:00 this gives 24:00, in 18 hours time
+ */
+ 
+ function getMidnightTonight(date) {
+   var year = date.getYear()
+   var month = date.getMonth()
+   var day = date.getDate()
+   return new Date(year, month, day + 1)
+ }
+ 
+ function test() {
+   var a = getMidnightTonight(new Date())
+   debugger
+ }
