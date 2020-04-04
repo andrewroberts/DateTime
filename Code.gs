@@ -2,6 +2,16 @@
 
 // JSHint - TODO
 
+var DAYS_OF_WEEK_ = [
+  'SUNDAY',
+  'MONDAY',
+  'TUESDAY',
+  'WEDNESDAY',
+  'THURSDAY',
+  'FRIDAY',
+  'SATURDAY',
+]
+
 /**
  * Given a script date object, return the time in the timezone of the 
  * user's calendar
@@ -821,8 +831,35 @@ function getDateTimeFromString1(dateStr, timeStr) {
    var day = date.getDate()
    return new Date(year, month, day + 1)
  }
+
+/**
+ * @param {Date} date
+ * @param {number} numberOfDays
+ * @param {boolean} backwards [OPTIONAL, DEFAULT: true]
+ *
+ * @return {Date} the date a number of days backwards or forwards
+ */
  
- function test() {
-   var a = getMidnightTonight(new Date())
-   debugger
+ function getDayOffsetDate(date, numberOfDays, backwards) {
+ 
+   if (backwards === undefined) {backwards = true}
+ 
+   var year = date.getYear()
+   var month = date.getMonth()
+   var day = date.getDate()
+   var newDay 
+   
+   if (backwards) {
+     newDay = day - numberOfDays
+   } else {
+     newDay = day + numberOfDays
+   }
+   
+   return new Date(year, month, newDay)
  }
+
+// function test() {
+//   var b = (new Date).getDay()
+//   var a = getDayOffsetDate(new Date(), 3, false)
+//   debugger
+// }
