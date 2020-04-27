@@ -572,7 +572,13 @@ function isISODateString(dateString) {
 }
 
 /**
- * 
+ * Get a Date object from various formats of date/time strings
+ *
+ * @param {object} config
+ *   {string} type: 'ISO', 'YYYY-MM-DD mm:hh:ss' (seconds optional or 'YY/MM/DD mm:hh:ss'), 'DDMMYY'
+ *   {string} dateTime - one of "type" formats
+ *
+ * @return {Date} Date object
  */
  
 function getDateTimeFromString(config) {
